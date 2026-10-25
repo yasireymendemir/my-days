@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Günüm">
+<meta name="theme-color" content="#ff7a00">
+<title>Günüm</title>
+<link rel="apple-touch-icon" id="icon" href="">
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--text:#111;--sub:#6c6c70;--line:#e5e5ea;--accent:#ff7a00;--accent2:#ffb300;--ok:#34c759;--bad:#ff3b30;--tab:rgba(249,249,249,.9);--field:#f2f2f7}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--text:#f5f5f7;--sub:#8e8e93;--line:#38383a;--tab:rgba(28,28,30,.9);--field:#2c2c2e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,textarea{font:inherit;font-size:16px;color:var(--text)}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+.view{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top) + 10px) 16px 28px}
+.view[hidden]{display:none}
+header.large{display:flex;align-items:flex-end;justify-content:space-between;margin:6px 0 4px}
+h1{margin:0;font-size:34px;line-height:1.1;letter-spacing:-.5px}
+.sub{margin:2px 0 16px;color:var(--sub);text-transform:capitalize}
+.hbtns{display:flex;gap:6px}
+.icon{width:40px;height:40px;border-radius:20px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.sec,.group{margin:22px 4px 8px;font-size:13px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.4px}
+.card,.wakecard,.banner{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px}
+.wake{width:100%;padding:18px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 18px rgba(255,122,0,.35)}
+.wake:disabled{opacity:.6}
+.wake:active{transform:scale(.98)}
+.hint{margin:10px 0 0;text-align:center;color:var(--sub);font-size:14px}
+.gm{text-align:center}.gm-t{font-size:22px;font-weight:700}.gm-s{color:var(--sub);margin-top:2px}
+.link{color:var(--accent);font-weight:600;padding:6px 4px}
+.banner{background:#fff3e0;color:#7a4b00;display:flex;align-items:center;justify-content:space-between;gap:8px}
+@media(prefers-color-scheme:dark){.banner{background:#3a2a10;color:#ffcf8a}}
+.list{background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:6px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.off{opacity:.45}
+.check{width:28px;height:28px;flex:none;border-radius:50%;border:2px solid var(--sub);display:flex;align-items:center;justify-content:center;color:#fff}
+.row.done .check{background:var(--ok);border-color:var(--ok)}
+.row.done .t{text-decoration:line-through;color:var(--sub)}
+.txt{flex:1;min-width:0}
+.t{font-weight:600}
+.d{color:var(--sub);font-size:14px;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{text-align:right;flex:none}
+.time{font-variant-numeric:tabular-nums;color:var(--sub);font-size:15px}
+.st{font-size:11px;margin-top:2px}.st.ok{color:var(--ok)}.st.fail{color:var(--bad)}.st.past{color:var(--sub)}
+.empty{text-align:center;color:var(--sub);padding:28px 12px}
+.setup h3{margin:0 0 8px}
+.setup ol{margin:0 0 12px;padding-left:20px}.setup li{margin-bottom:8px}
+.topic{margin-top:6px;padding:8px 10px;border-radius:10px;background:var(--field);font:600 14px ui-monospace,Menlo,monospace;word-break:break-all;user-select:all;-webkit-user-select:all}
+.btnrow{display:flex;gap:8px;margin-bottom:8px}
+.btn{flex:1;padding:12px;border-radius:12px;background:var(--field);font-weight:600;text-align:center}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.danger{color:var(--bad)}
+.tabbar{display:flex;background:var(--tab);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:6px 0 calc(env(safe-area-inset-bottom) + 4px)}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--sub);padding:4px 0}
+.tabbar button.on{color:var(--accent)}
+#quick{display:flex;gap:8px;margin:8px 0 4px}
+#quick input{flex:1;padding:12px 14px;border-radius:12px;border:0;background:var(--card)}
+#quick button{padding:0 16px;border-radius:12px;background:var(--accent);color:#fff;font-weight:600}
+.note{padding:12px 14px;border-top:1px solid var(--line)}.note:first-child{border-top:0}
+.note .nt{white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.note .nd{font-size:12px;color:var(--sub);margin-top:4px}
+#sheet{position:fixed;inset:0;z-index:50;pointer-events:none}
+#backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;transition:opacity .2s}
+#panel{position:absolute;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top) + 24px);display:flex;flex-direction:column;background:var(--bg);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .25s}
+#sheet.open{pointer-events:auto}#sheet.open #backdrop{opacity:1}#sheet.open #panel{transform:none}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sheet-head h2{margin:0;font-size:17px}
+.sheet-head button{color:var(--accent);font-weight:600;min-width:64px}
+.sheet-head .primary{text-align:right}.sheet-head button:first-child{text-align:left}
+.sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(env(safe-area-inset-bottom) + 220px)}
+.field{display:block;margin-bottom:16px}
+.field>span{display:block;font-size:13px;color:var(--sub);margin:0 4px 6px;text-transform:uppercase;letter-spacing:.3px}
+.field input[type=text],.field input[type=time],.field input[type=number],.field textarea{width:100%;padding:12px 14px;border-radius:12px;border:0;background:var(--card);resize:none}
+.seg{display:flex;background:var(--field);border-radius:10px;padding:2px;margin-bottom:16px}
+.seg button{flex:1;padding:8px;border-radius:8px;font-weight:600;font-size:14px;color:var(--sub)}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.stepper{display:flex;gap:8px;align-items:center}
+.stepper button{width:44px;height:44px;border-radius:12px;background:var(--card);font-size:22px;font-weight:600;color:var(--accent)}
+.stepper input{text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips button{padding:6px 12px;border-radius:16px;background:var(--card);font-size:14px}
+.toggle{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.fine{color:var(--sub);font-size:13px;margin:0 4px 12px}
+.fine b{color:var(--text)}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 76px);transform:translate(-50%,20px);max-width:88%;background:rgba(40,40,42,.96);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+body.noscroll .view{overflow:hidden}
+</style>
+</head>
+<body>
+<div id="app">
+  <main class="view" id="view-day">
+    <header class="large">
+      <h1>Günüm</h1>
+      <div class="hbtns">
+        <button class="icon" data-act="settings" aria-label="Ayarlar"><i data-ico="sliders"></i></button>
+        <button class="icon" data-act="add-task" aria-label="Görev ekle"><i data-ico="plus"></i></button>
+      </div>
+    </header>
+    <p class="sub" id="today"></p>
+    <div id="day-body"></div>
+  </main>
+
+  <main class="view" id="view-notes" hidden>
+    <header class="large"><h1>Notlarım</h1></header>
+    <form id="quick" autocomplete="off">
+      <input id="quick-input" type="text" placeholder="Aklına geleni hemen yaz…" enterkeyhint="done" maxlength="2000">
+      <button type="submit">Ekle</button>
+    </form>
+    <div id="notes-list"></div>
+  </main>
+
+  <nav class="tabbar">
+    <button data-act="tab" data-tab="day" class="on"><i data-ico="sun"></i><span>Günüm</span></button>
+    <button data-act="tab" data-tab="notes"><i data-ico="note"></i><span>Notlarım</span></button>
+  </nav>
+</div>
+
+<div id="sheet"><div id="backdrop"></div><div id="panel"></div></div>
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+const NTFY = 'https://ntfy.sh';
+const $ = (s, el = document) => el.querySelector(s);
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('gunum.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('gunum.' + k, JSON.stringify(v)); } catch (e) { /* depolama kapalıysa sessizce geç */ } }
+};
+
+/* ---------- Simgeler ---------- */
+const ICONS = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  note: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  sliders: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+};
+const ico = (n, s = 24, w = 2) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+document.querySelectorAll('[data-ico]').forEach(el => { el.outerHTML = ico(el.dataset.ico); });
+
+/* ---------- Uygulama simgesi (Ana Ekran için) ---------- */
+try {
+  const c = document.createElement('canvas'); c.width = c.height = 180;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 180, 180); g.addColorStop(0, '#ffb300'); g.addColorStop(1, '#ff6a00');
+  x.fillStyle = g; x.fillRect(0, 0, 180, 180);
+  x.fillStyle = '#fff'; x.beginPath(); x.arc(90, 90, 32, 0, Math.PI * 2); x.fill();
+  x.strokeStyle = '#fff'; x.lineWidth = 10; x.lineCap = 'round';
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; x.beginPath(); x.moveTo(90 + Math.cos(a) * 50, 90 + Math.sin(a) * 50); x.lineTo(90 + Math.cos(a) * 68, 90 + Math.sin(a) * 68); x.stroke(); }
+  $('#icon').href = c.toDataURL('image/png');
+} catch (e) { /* simge üretilemezse varsayılan kalır */ }
+
+/* ---------- Veri ---------- */
+const starter = [
+  { id: uid(), title: 'Yüzüne buz masajı', detail: 'Yüzüne buz masajı yapmayı unutma!', timing: { type: 'after', min: 5 }, enabled: true },
+  { id: uid(), title: 'Kahvaltı', detail: 'Kahvaltı yapmalısın.', timing: { type: 'after', min: 30 }, enabled: true }
+];
+let tasks = store.get('tasks', null);
+if (!Array.isArray(tasks)) { tasks = starter; store.set('tasks', tasks); }
+let notes = store.get('notes', []);
+if (!Array.isArray(notes)) notes = [];
+
+function makeTopic() {
+  const a = new Uint8Array(14);
+  crypto.getRandomValues(a);
+  return 'gunum-' + Array.from(a, b => (b % 36).toString(36)).join('');
+}
+let topic = store.get('topic', null);
+if (!topic) { topic = makeTopic(); store.set('topic', topic); }
+
+const dayKey = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+let day = store.get('day', null);
+function ensureDay() {
+  if (!day || day.date !== dayKey()) {
+    day = { date: dayKey(), wake: null, done: [], status: {} };
+    store.set('day', day);
+    return true;
+  }
+  return false;
+}
+ensureDay();
+
+let tab = 'day';
+let busy = false;
+
+/* ---------- Zaman yardımcıları ---------- */
+const fmtClock = ts => { const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+
+function fireTime(t) {
+  if (t.timing.type === 'after') return day.wake ? day.wake + t.timing.min * 60000 : null;
+  const d = new Date(); d.setHours(t.timing.h, t.timing.m, 0, 0); return d.getTime();
+}
+function sortKey(t) {
+  if (t.timing.type === 'fixed') return t.timing.h * 60 + t.timing.m;
+  const base = day.wake ? new Date(day.wake).getHours() * 60 + new Date(day.wake).getMinutes() : 7 * 60; // uyanış belli değilse sadece sıralama için 07:00
+  return base + t.timing.min;
+}
+function timeLabel(t) {
+  if (t.timing.type === 'fixed') return pad(t.timing.h) + ':' + pad(t.timing.m);
+  if (day.wake) return fmtClock(day.wake + t.timing.min * 60000);
+  return t.timing.min === 0 ? 'Uyanınca' : '+' + t.timing.min + ' dk';
+}
+function groupLabel(ts) {
+  const d = new Date(ts), n = new Date();
+  const start = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((start(n) - start(d)) / 86400000);
+  if (diff === 0) return 'Bugün';
+  if (diff === 1) return 'Dün';
+  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: d.getFullYear() === n.getFullYear() ? undefined : 'numeric' });
+}
+
+/* ---------- ntfy ---------- */
+async function sendNtfy(payload) {
+  const r = await fetch(NTFY, { method: 'POST', body: JSON.stringify(Object.assign({ topic }, payload)) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+}
+
+async function scheduleTask(t) {
+  const at = fireTime(t);
+  if (at === null) return 'skip';
+  const secs = Math.round((at - Date.now()) / 1000);
+  const payload = { title: t.title, message: t.detail || 'Şimdi bunun zamanı.', tags: ['bell'] };
+  if (secs >= 10) {
+    if (secs > 3 * 86400) return 'past';
+    payload.delay = secs + 's';           // ntfy: en az 10 sn, en çok 3 gün
+  } else if (secs < -90) {
+    return 'past';                          // zamanı geçmiş
+  }                                         // 10 sn'den az kaldıysa hemen gönder
+  try { await sendNtfy(payload); return 'ok'; } catch (e) { return 'fail'; }
+}
+
+async function runSchedule(list) {
+  if (!list.length) return;
+  busy = true; render();
+  const results = await Promise.all(list.map(async t => [t.id, await scheduleTask(t)]));
+  results.forEach(([id, s]) => { if (s !== 'skip') day.status[id] = s; });
+  store.set('day', day);
+  busy = false; render();
+  const ok = results.filter(r => r[1] === 'ok').length;
+  const fail = results.filter(r => r[1] === 'fail').length;
+  toast(fail ? `${ok} planlandı, ${fail} gönderilemedi` : (ok ? `${ok} hatırlatma planlandı ✓` : 'Planlanacak hatırlatma yok'));
+}
+
+async function wakeUp() {
+  ensureDay();
+  day.wake = Date.now(); day.done = []; day.status = {};
+  store.set('day', day);
+  await runSchedule(tasks.filter(t => t.enabled));
+  render();
+}
+
+async function testNotif() {
+  try { await sendNtfy({ title: 'Günüm', message: 'Bildirimler çalışıyor ✅', tags: ['white_check_mark'] }); toast('Test gönderildi — telefonuna bakıp bildirimi bekle'); }
+  catch (e) { toast('Gönderilemedi. İnternet bağlantını kontrol et.'); }
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); toast('Kopyalandı'); }
+  catch (e) { window.prompt('Kopyala:', s); }
+}
+
+/* ---------- Görünümler ---------- */
+const stLabel = { ok: 'planlandı', fail: 'gönderilemedi', past: 'geçti' };
+
+function setupCard() {
+  if (store.get('setup', false)) return '';
+  const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  return `<section class="card setup"><h3>Bildirim kurulumu (bir kerelik)</h3><ol>
+    ${standalone ? '' : '<li>Safari\'de <b>Paylaş ▸ Ana Ekrana Ekle</b> yap ve uygulamayı oradan aç. Veriler Safari\'den ayrı tutulur, o yüzden önce bunu yap.</li>'}
+    <li>App Store\'dan ücretsiz <b>ntfy</b> uygulamasını indir.</li>
+    <li>ntfy\'de <b>+</b>\'ya bas, konu adı olarak şunu yaz:<div class="topic">${esc(topic)}</div></li>
+    <li>Bildirim iznini ver, sonra aşağıdan test et.</li></ol>
+    <div class="btnrow"><button class="btn" data-act="copy-topic">Konu adını kopyala</button><button class="btn" data-act="test">Test gönder</button></div>
+    <button class="btn primary" style="width:100%" data-act="setup-done">Tamam, bildirim geldi</button></section>`;
+}
+
+function rowHtml(t) {
+  const done = day.done.includes(t.id);
+  const st = day.wake && t.enabled ? day.status[t.id] : null;
+  return `<div class="row${done ? ' done' : ''}${t.enabled ? '' : ' off'}">
+    <button class="check" data-act="toggle" data-id="${t.id}" aria-label="Tamamlandı olarak işaretle">${done ? ico('check', 16, 3) : ''}</button>
+    <div class="txt" data-act="edit" data-id="${t.id}"><div class="t">${esc(t.title)}</div>${t.detail ? `<div class="d">${esc(t.detail)}</div>` : ''}</div>
+    <div class="meta" data-act="edit" data-id="${t.id}"><div class="time">${timeLabel(t)}</div>${st ? `<div class="st ${st}">${stLabel[st]}</div>` : ''}</div>
+  </div>`;
+}
+
+function renderDay() {
+  $('#today').textContent = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const list = tasks.slice().sort((a, b) => sortKey(a) - sortKey(b));
+  const failed = day.wake && tasks.some(t => t.enabled && day.status[t.id] === 'fail');
+  let h = setupCard();
+  h += '<section class="wakecard">';
+  if (day.wake) {
+    h += `<div class="gm"><div class="gm-t">Günaydın ☀️</div><div class="gm-s">${busy ? 'Hatırlatmalar planlanıyor…' : fmtClock(day.wake) + ' saatinde uyandın'}</div><button class="link" data-act="reset">Sıfırla</button></div>`;
+  } else {
+    h += `<button class="wake" data-act="wake" ${busy ? 'disabled' : ''}>${ico('sun', 28)}<span>Uyandım</span></button><p class="hint">Basınca bugünün hatırlatmaları telefonuna planlanır.</p>`;
+  }
+  h += '</section>';
+  if (failed) h += '<section class="banner"><span>Bazı hatırlatmalar gönderilemedi (internet?).</span><button class="link" data-act="retry">Tekrar dene</button></section>';
+  h += '<div class="sec">Rutinim</div>';
+  h += list.length ? `<section class="list">${list.map(rowHtml).join('')}</section>` : '<div class="empty">Henüz görev yok.<br>Sağ üstteki + ile ekle.</div>';
+  $('#day-body').innerHTML = h;
+}
+
+function renderNotes() {
+  const sorted = notes.slice().sort((a, b) => b.ts - a.ts);
+  if (!sorted.length) { $('#notes-list').innerHTML = '<div class="empty">Henüz not yok.<br>Gün içinde aklına geleni yukarıya yaz.</div>'; return; }
+  const groups = [];
+  sorted.forEach(n => {
+    const g = groupLabel(n.ts);
+    if (!groups.length || groups[groups.length - 1].label !== g) groups.push({ label: g, items: [] });
+    groups[groups.length - 1].items.push(n);
+  });
+  $('#notes-list').innerHTML = groups.map(g => `<div class="group">${esc(g.label)}</div><section class="list">${g.items.map(n =>
+    `<div class="note" data-act="edit-note" data-id="${n.id}"><div class="nt">${esc(n.text)}</div><div class="nd">${fmtClock(n.ts)}</div></div>`).join('')}</section>`).join('');
+}
+
+function render() { renderDay(); renderNotes(); }
+
+function setTab(t) {
+  tab = t;
+  $('#view-day').hidden = t !== 'day';
+  $('#view-notes').hidden = t !== 'notes';
+  document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+}
+
+/* ---------- Sheet ---------- */
+function openSheet(html) {
+  $('#panel').innerHTML = html;
+  $('#sheet').classList.add('open');
+  document.body.classList.add('noscroll');
+}
+function closeSheet() {
+  $('#sheet').classList.remove('open');
+  document.body.classList.remove('noscroll');
+  setTimeout(() => { if (!$('#sheet').classList.contains('open')) $('#panel').innerHTML = ''; }, 280);
+}
+$('#backdrop').addEventListener('click', closeSheet);
+
+function openTaskEditor(existing) {
+  const cur = existing ? JSON.parse(JSON.stringify(existing)) : { id: uid(), title: '', detail: '', timing: { type: 'after', min: 0 }, enabled: true };
+  let mode = cur.timing.type;
+  openSheet(`
+    <div class="sheet-head"><button id="s-cancel">Vazgeç</button><h2>${existing ? 'Görevi düzenle' : 'Yeni görev'}</h2><button id="s-save" class="primary">Kaydet</button></div>
+    <div class="sheet-body">
+      <label class="field"><span>Görev</span><input id="f-title" type="text" placeholder="Ör. Kahvaltı" maxlength="80"></label>
+      <label class="field"><span>Unutmaman gereken</span><textarea id="f-detail" rows="3" placeholder="Ör. Yüzüne buz masajı yapmayı unutma" maxlength="300"></textarea></label>
+      <div class="seg"><button data-mode="after">Uyandıktan sonra</button><button data-mode="fixed">Sabit saat</button></div>
+      <div id="f-after" class="field"><span>Uyandıktan kaç dakika sonra?</span>
+        <div class="stepper"><button data-step="-5" aria-label="Azalt">−</button><input id="f-min" type="number" inputmode="numeric" min="0" max="720" step="5"><button data-step="5" aria-label="Artır">+</button></div>
+        <div class="chips">${[0, 5, 10, 15, 30, 45, 60, 90].map(m => `<button data-chip="${m}">${m === 0 ? 'Hemen' : m + ' dk'}</button>`).join('')}</div>
+      </div>
+      <div id="f-fixed" class="field"><span>Saat</span><input id="f-time" type="time"><p class="fine">Bugün için, “Uyandım”a bastığında planlanır.</p></div>
+      <label class="toggle"><span>Aktif</span><input id="f-on" type="checkbox"></label>
+      ${existing ? '<button class="btn danger" id="s-del" style="width:100%">Görevi sil</button>' : ''}
+    </div>`);
+  $('#f-title').value = cur.title;
+  $('#f-detail').value = cur.detail;
+  $('#f-on').checked = cur.enabled;
+  $('#f-min').value = cur.timing.type === 'after' ? cur.timing.min : 30;
+  $('#f-time').value = cur.timing.type === 'fixed' ? pad(cur.timing.h) + ':' + pad(cur.timing.m) : '08:00';
+
+  const syncMode = () => {
+    document.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+    $('#f-after').hidden = mode !== 'after';
+    $('#f-fixed').hidden = mode !== 'fixed';
+  };
+  syncMode();
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { mode = b.dataset.mode; syncMode(); }));
+  document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
+    $('#f-min').value = clamp((parseInt($('#f-min').value, 10) || 0) + parseInt(b.dataset.step, 10), 0, 720);
+  }));
+  document.querySelectorAll('[data-chip]').forEach(b => b.addEventListener('click', () => { $('#f-min').value = b.dataset.chip; }));
+
+  $('#s-cancel').addEventListener('click', closeSheet);
+  $('#s-save').addEventListener('click', () => {
+    const title = $('#f-title').value.trim();
+    if (!title) { $('#f-title').focus(); return; }
+    let timing;
+    if (mode === 'after') timing = { type: 'after', min: clamp(parseInt($('#f-min').value, 10) || 0, 0, 720) };
+    else { const [h, m] = ($('#f-time').value || '08:00').split(':').map(Number); timing = { type: 'fixed', h, m }; }
+    const next = Object.assign({}, cur, { title, detail: $('#f-detail').value.trim(), enabled: $('#f-on').checked, timing });
+    const idx = tasks.findIndex(x => x.id === next.id);
+    const prev = idx >= 0 ? tasks[idx] : null;
+    if (idx >= 0) tasks[idx] = next; else tasks.push(next);
+    store.set('tasks', tasks);
+    closeSheet(); render();
+    if (day.wake && next.enabled) {
+      if (!day.status[next.id]) runSchedule([next]);
+      else if (prev && JSON.stringify(prev.timing) !== JSON.stringify(next.timing)) toast('Bugünün bildirimi zaten planlandı; yeni zaman yarından geçerli.');
+    }
+  });
+  const del = $('#s-del');
+  if (del) del.addEventListener('click', () => {
+    if (!confirm('Bu görev silinsin mi?')) return;
+    tasks = tasks.filter(x => x.id !== cur.id);
+    store.set('tasks', tasks);
+    const planned = day.wake && day.status[cur.id] === 'ok';
+    closeSheet(); render();
+    if (planned) toast('Bugün için planlanan bildirim yine de gelebilir.');
+  });
+  if (!existing) setTimeout(() => $('#f-title').focus(), 300);
+}
+
+function openNoteEditor(n) {
+  openSheet(`
+    <div class="sheet-head"><button id="s-cancel">Vazgeç</button><h2>Notu düzenle</h2><button id="s-save" class="primary">Kaydet</button></div>
+    <div class="sheet-body">
+      <label class="field"><textarea id="f-note" rows="10" maxlength="5000" style="width:100%"></textarea></label>
+      <button class="btn danger" id="s-del" style="width:100%">Notu sil</button>
+    </div>`);
+  $('#f-note').value = n.text;
+  $('#s-cancel').addEventListener('click', closeSheet);
+  $('#s-save').addEventListener('click', () => {
+    const text = $('#f-note').value.trim();
+    if (text) { n.text = text; store.set('notes', notes); }
+    closeSheet(); renderNotes();
+  });
+  $('#s-del').addEventListener('click', () => {
+    if (!confirm('Bu not silinsin mi?')) return;
+    notes = notes.filter(x => x.id !== n.id);
+    store.set('notes', notes);
+    closeSheet(); renderNotes();
+  });
+}
+
+function openSettings() {
+  openSheet(`
+    <div class="sheet-head"><button id="s-cancel">Kapat</button><h2>Ayarlar</h2><span style="min-width:64px"></span></div>
+    <div class="sheet-body">
+      <div class="field"><span>ntfy konu adın</span><div class="topic">${esc(topic)}</div></div>
+      <div class="btnrow"><button class="btn" data-act="copy-topic">Kopyala</button><button class="btn" data-act="test">Test gönder</button></div>
+      <p class="fine">Bu isim bildirim kanalının tek “şifresi”. Kimseyle paylaşma.</p>
+      <p class="fine"><b>Nasıl çalışır?</b> “Uyandım”a basınca o günün tüm hatırlatmaları ntfy.sh servisine zamanlanarak gönderilir; zamanı gelince telefonundaki ntfy uygulaması iOS bildirimi olarak gösterir. Bildirimlerin sesi ve titreşimi iOS'un Ayarlar ▸ Bildirimler ▸ ntfy bölümünden ayarlanır.</p>
+      <p class="fine"><b>Sınırlar:</b> Zamanlanmış bir bildirim iptal edilemez. Görevi yapıp işaretlesen de bildirimi yine gelir. Bildirimlerde sadece görev başlığı ve “unutma” notu ntfy.sh üzerinden geçer. Notların yalnızca bu telefonda kalır.</p>
+      <button class="btn" id="s-help" style="width:100%;margin-bottom:10px">Kurulum adımlarını tekrar göster</button>
+      <button class="btn danger" id="s-newtopic" style="width:100%">Yeni konu adı üret</button>
+    </div>`);
+  $('#s-cancel').addEventListener('click', closeSheet);
+  $('#s-help').addEventListener('click', () => { store.set('setup', false); closeSheet(); setTab('day'); render(); });
+  $('#s-newtopic').addEventListener('click', () => {
+    if (!confirm('Yeni konu adı üretilirse ntfy uygulamasında da yeni konuya abone olman gerekir. Devam?')) return;
+    topic = makeTopic(); store.set('topic', topic); store.set('setup', false);
+    closeSheet(); render();
+  });
+}
+
+/* ---------- Olaylar ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const id = el.dataset.id;
+  switch (el.dataset.act) {
+    case 'tab': setTab(el.dataset.tab); break;
+    case 'wake': wakeUp(); break;
+    case 'reset':
+      if (confirm('Sıfırlarsan bugün zaten planlanan bildirimler yine gelir ve tekrar “Uyandım”a basarsan yenileri eklenir. Devam?')) {
+        day.wake = null; day.done = []; day.status = {}; store.set('day', day); render();
+      }
+      break;
+    case 'toggle':
+      day.done = day.done.includes(id) ? day.done.filter(x => x !== id) : day.done.concat(id);
+      store.set('day', day); render(); break;
+    case 'edit': openTaskEditor(tasks.find(t => t.id === id)); break;
+    case 'add-task': openTaskEditor(null); break;
+    case 'settings': openSettings(); break;
+    case 'copy-topic': copyText(topic); break;
+    case 'test': testNotif(); break;
+    case 'setup-done': store.set('setup', true); render(); break;
+    case 'retry': runSchedule(tasks.filter(t => t.enabled && day.status[t.id] === 'fail')); break;
+    case 'edit-note': openNoteEditor(notes.find(n => n.id === id)); break;
+  }
+});
+
+$('#quick').addEventListener('submit', e => {
+  e.preventDefault();
+  const inp = $('#quick-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  notes.unshift({ id: uid(), text, ts: Date.now() });
+  store.set('notes', notes);
+  inp.value = '';
+  renderNotes();
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') { ensureDay(); render(); }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
